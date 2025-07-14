@@ -1,35 +1,37 @@
-# 베이스 이미지로 ubuntu:22.04 사용
-FROM ubuntu:22.04
+# syntax=docker/dockerfile:1.7
+###########################
+# 0) 공통 베이스 (런타임)
+###########################
+FROM python:3.11-slim-bookworm AS base
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# 환경변수 설정 (옵션)
-ENV PATH /usr/local/bin:$PATH
-ENV LANG C.UTF-8
+###########################
+# 1) 빌드 스테이지
+###########################
+FROM base AS builder
+# 1-1) uv 단일 바이너리 복사
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# 기본 패키지들 설치 및 Python 3 설치
-RUN apt update
-RUN apt install -y git
-RUN apt install -y curl
-RUN apt install -y python3-pip
+# 1-2) 작업 디렉터리 준비
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
 
-# nodejs 설치
-RUN curl -s https://deb.nodesource.com/setup_16.x | bash
-RUN apt install -y nodejs
+# 1-3) 의존성 설치 (캐시 유지)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
-# 여러분의 현재 디렉토리의 모든 파일들을 도커 컨테이너의 /myapi 디렉토리로 복사 (원하는 디렉토리로 설정해도 됨)
-ADD . /myapi
+# 1-4) 애플리케이션 복사 + 설치
+COPY . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
-# 8000번 포트 개방 (FastAPI 웹 애플리케이션을 8000번 포트에서 띄움)
-EXPOSE 8000
-
-# 작업 디렉토리로 이동
-WORKDIR /myapi
-
-# 작업 디렉토리에 있는 requirements.txt로 패키지 설치
-RUN pip install -r requirements.txt
-
-# npm install
-WORKDIR /myapi/frontend
-RUN npm install
-
-# 컨테이너에서 실행될 명령어.
-CMD [ "/bin/bash" ]
+###########################
+# 2) 런타임 스테이지
+###########################
+FROM base
+WORKDIR /app
+# 2-1) 빌드 산출물만 복사
+COPY --from=builder /app /app
+ENV PATH="/app/.venv/bin:$PATH"
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
