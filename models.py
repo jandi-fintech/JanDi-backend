@@ -1,18 +1,17 @@
 # File: models.py
-from sqlalchemy import (
+from sqlalchemy.orm import relationship, declared_attr
+from database       import Base
+from sqlalchemy     import (
     Column, Integer, String, ForeignKey,
     DateTime, func, Text, Numeric, UniqueConstraint
 )
-from sqlalchemy.orm import relationship, declared_attr
-from database import Base
 
 
 # ────────────────────────────────────────────────────────────────────────────
 # 공통 믹스인 클래스 정의
 class TimestampMixin:
-    """
-    생성 시각(created_at) 공통 정의
-    """
+    """생성 시각(created_at) 공통 정의"""
+
     created_at = Column(
         DateTime, nullable=False,
         server_default=func.now() # 값이 자동으로 설정되는 생성 시각
@@ -20,9 +19,8 @@ class TimestampMixin:
 
 
 class UserMixin:
-    """
-    user_id 공통 정의 (index 포함)
-    """
+    """user_id 공통 정의 (index 포함)"""
+
     @declared_attr
     def user_id(cls):
         return Column(
@@ -33,9 +31,8 @@ class UserMixin:
 
 # ────────────────────────────────────────────────────────────────────────────
 class Institution(Base, TimestampMixin):
-    """
-    은행 기관 정보 모델
-    """
+    """은행 기관 정보 모델"""
+
     __tablename__ = "institution"
 
     code = Column(String(4), primary_key=True)
@@ -46,9 +43,8 @@ class Institution(Base, TimestampMixin):
 
 
 class User(Base, TimestampMixin):
-    """
-    사용자 정보 모델
-    """
+    """사용자 정보 모델"""
+
     __tablename__ = "user"
 
     id            = Column(Integer, primary_key=True)
@@ -71,20 +67,19 @@ class Transaction(Base, UserMixin, TimestampMixin):
     """
     __tablename__ = "transaction"
 
-    id          = Column(String(64), primary_key=True)                # 외부 시스템 연동 고려
+    id          = Column(String(64), primary_key=True) # 외부 시스템 연동 고려
     account_id  = Column(Integer, ForeignKey("account.id"), nullable=False, index=True)
     amount      = Column(Numeric(18, 2), nullable=False)
     tx_type     = Column(String(20), nullable=False)
     memo        = Column(Text, nullable=True)
 
-    account      = relationship("Account",     back_populates="transactions")
+    account      = relationship("Account", back_populates="transactions")
     spare_change = relationship("SpareChange", uselist=False, back_populates="transaction")
 
 
 class InternetBanking(Base, UserMixin, TimestampMixin):
-    """
-    인터넷 뱅킹 정보 모델
-    """
+    """인터넷 뱅킹 정보 모델"""
+
     __tablename__        = "internet_banking"
 
     id                   = Column(Integer, primary_key=True, index=True)
@@ -97,9 +92,8 @@ class InternetBanking(Base, UserMixin, TimestampMixin):
 
 
 class Account(Base, UserMixin, TimestampMixin):
-    """
-    사용자 계좌 정보 모델
-    """
+    """사용자 계좌 정보 모델"""
+
     __tablename__        = "account"
 
     id                   = Column(Integer, primary_key=True, index=True)

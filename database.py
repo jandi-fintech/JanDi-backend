@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy                 import create_engine, MetaData
+from sqlalchemy.ext.asyncio     import create_async_engine, AsyncSession
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from starlette.config import Config
+from sqlalchemy.orm             import sessionmaker
+from starlette.config           import Config
 
 config = Config('.env')
 

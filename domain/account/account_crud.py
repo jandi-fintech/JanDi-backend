@@ -4,14 +4,12 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
+from models                        import InternetBanking, Account
+from ..utils.crypto                import encrypt
 from domain.account.account_schema import (
-    InternetBankingCreate,
-    InternetBankingOut,
-    AccountCreate,
-    AccountOut,
+    InternetBankingCreate, InternetBankingOut,
+    AccountCreate, AccountOut
 )
-from models import InternetBanking, Account
-from ..utils.crypto import encrypt
 
 
 # ───────────────────────────────────────────────────────────────────────────

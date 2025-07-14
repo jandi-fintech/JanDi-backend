@@ -88,101 +88,94 @@ export default function JandonTest() {
 
   /* ─────────────────────────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="mx-auto max-w-4xl space-y-8">
-        {/* 헤더 */}
-        <header className="text-center">
-          <h1 className="text-4xl font-bold text-indigo-600">잔돈 대시보드</h1>
-          <p className="mt-2 text-gray-500">잔돈 라운드-업 관리 및 요약</p>
-        </header>
+    <>
 
-        {/* 라운드-업 단위 설정 */}
-        <section className="rounded-lg bg-white p-6 shadow">
+      {/* 라운드-업 단위 설정 */}
+      <section className="rounded-lg bg-white p-6 shadow">
+        <h2 className="mb-4 text-2xl font-semibold text-gray-800">
+          라운드-업 단위
+        </h2>
+        <form onSubmit={patchRoundUnit} className="flex items-center gap-4">
+          <Input
+            type="number"
+            label="단위(원)"
+            value={roundUnit}
+            onChange={(e) => setRoundUnit(+e.target.value)}
+          />
+          <Button type="submit">변경</Button>
+        </form>
+      </section>
+
+      {/* 잔돈 생성 & 목록 */}
+      <section className="grid gap-6 md:grid-cols-2">
+        {/* 생성 */}
+        <div className="rounded-lg bg-white p-6 shadow">
           <h2 className="mb-4 text-2xl font-semibold text-gray-800">
-            라운드-업 단위
+            잔돈 생성
           </h2>
-          <form onSubmit={patchRoundUnit} className="flex items-center gap-4">
+          <form onSubmit={createSpare} className="space-y-4">
+            <Input
+              type="text"
+              label="거래 ID"
+              value={txId}
+              onChange={(e) => setTxId(e.target.value)}
+            />
             <Input
               type="number"
-              label="단위(원)"
-              value={roundUnit}
-              onChange={(e) => setRoundUnit(+e.target.value)}
+              label="금액(원)"
+              value={amount}
+              onChange={(e) => setAmount(+e.target.value)}
             />
-            <Button type="submit">변경</Button>
+            <Button type="submit">추가</Button>
           </form>
-        </section>
+        </div>
 
-        {/* 잔돈 생성 & 목록 */}
-        <section className="grid gap-6 md:grid-cols-2">
-          {/* 생성 */}
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-2xl font-semibold text-gray-800">
-              잔돈 생성
-            </h2>
-            <form onSubmit={createSpare} className="space-y-4">
-              <Input
-                type="text"
-                label="거래 ID"
-                value={txId}
-                onChange={(e) => setTxId(e.target.value)}
-              />
-              <Input
-                type="number"
-                label="금액(원)"
-                value={amount}
-                onChange={(e) => setAmount(+e.target.value)}
-              />
-              <Button type="submit">추가</Button>
-            </form>
-          </div>
+        {/* 목록 */}
+        <div className="rounded-lg bg-white p-6 shadow">
+          <h2 className="mb-4 text-2xl font-semibold text-gray-800">
+            잔돈 목록
+          </h2>
+          <Button onClick={fetchSpares} className="bg-gray-200 text-gray-800">
+            목록 갱신
+          </Button>
+          <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto">
+            {spares.map((s) => (
+              <li
+                key={s.tx_id}
+                className="flex justify-between rounded border border-green-100 bg-green-50 p-3"
+              >
+                <span>거래: {s.tx_id}</span>
+                <span className="font-medium">+{s.round_up}원</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
-          {/* 목록 */}
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-2xl font-semibold text-gray-800">
-              잔돈 목록
-            </h2>
-            <Button onClick={fetchSpares} className="bg-gray-200 text-gray-800">
-              목록 갱신
-            </Button>
-            <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto">
-              {spares.map((s) => (
-                <li
-                  key={s.tx_id}
-                  className="flex justify-between rounded border border-green-100 bg-green-50 p-3"
-                >
-                  <span>거래: {s.tx_id}</span>
-                  <span className="font-medium">+{s.round_up}원</span>
-                </li>
-              ))}
-            </ul>
+      {/* 요약 */}
+      <section className="rounded-lg bg-white p-6 shadow">
+        <h2 className="mb-4 text-2xl font-semibold text-gray-800">요약</h2>
+        <div className="mb-4 flex flex-col gap-4 md:flex-row">
+          <Input
+            type="datetime-local"
+            label="시작"
+            value={periodStart}
+            onChange={(e) => setPeriodStart(e.target.value)}
+          />
+          <Input
+            type="datetime-local"
+            label="종료"
+            value={periodEnd}
+            onChange={(e) => setPeriodEnd(e.target.value)}
+          />
+          <Button onClick={fetchSummary}>조회</Button>
+        </div>
+        {summary && (
+          <div className="text-lg font-semibold text-indigo-600">
+            총 잔돈: {summary.total_round_up}원
           </div>
-        </section>
-
-        {/* 요약 */}
-        <section className="rounded-lg bg-white p-6 shadow">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-800">요약</h2>
-          <div className="mb-4 flex flex-col gap-4 md:flex-row">
-            <Input
-              type="datetime-local"
-              label="시작"
-              value={periodStart}
-              onChange={(e) => setPeriodStart(e.target.value)}
-            />
-            <Input
-              type="datetime-local"
-              label="종료"
-              value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
-            />
-            <Button onClick={fetchSummary}>조회</Button>
-          </div>
-          {summary && (
-            <div className="text-lg font-semibold text-indigo-600">
-              총 잔돈: {summary.total_round_up}원
-            </div>
-          )}
-        </section>
-      </div>
-    </div>
+        )}
+      </section>
+    </>
   );
 }
