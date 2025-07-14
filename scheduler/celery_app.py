@@ -4,9 +4,9 @@ import logging
 from celery           import Celery
 from starlette.config import Config
 
-config       = Config('.env')
-BROKER_URL   = config('REDIS_URL', default="redis://localhost:6379/0")
-BACKEND_URL  = config('REDIS_URL', default="redis://localhost:6379/1")
+config      = Config('.env')
+BROKER_URL  = config('REDIS_URL', default="redis://localhost:6379/0")
+BACKEND_URL = config('REDIS_URL', default="redis://localhost:6379/1")
 DEBUG_MODE  = config('DEBUG_MODE', default="false").lower() == "true"
 
 # ────────────────────────── 로깅 설정 ──────────────────────────
@@ -17,10 +17,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ────────────────────────── 초기화 로깅 ─────────────────────────
-logger.debug(f"[Celery Init] BROKER_URL  = {BROKER_URL}")
-logger.debug(f"[Celery Init] BACKEND_URL = {BACKEND_URL}")
+# ────────────────────────── Debug 헬퍼 ─────────────────────────
+def _debug(category: str, message: str) -> None:
+    """일관된 형식의 디버그 로그 기록"""
 
+    if DEBUG_MODE:
+        logger.debug(f"[{category}] {message}")
+
+# ────────────────────────── 초기화 로깅 ─────────────────────────
+logger.info("\n")
+logger.info("================== Celery app initializing ==================")
+_debug("Celery Init", f"BROKER_URL  = {BROKER_URL}")
+_debug("Celery Init", f"BACKEND_URL = {BACKEND_URL}")
+
+# ────────────────────────── Celery 앱 초기화 ─────────────────────────
 celery_app = Celery(
     "fin_scheduler",
     broker=BROKER_URL,
@@ -37,3 +47,5 @@ celery_app.conf.beat_schedule = {
         "schedule": 60 * 60 * 24,  # 24h
     },
 }
+
+logger.info("================== Celery app ready to serve ==================\n")

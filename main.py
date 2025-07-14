@@ -38,7 +38,8 @@ def _debug(category: str, message: str) -> None:
 
 
 app = FastAPI()
-logger.info("FastAPI app initializing")
+logger.info("================== FastAPI app initializing ==================")
+logger.debug(f"[FastAPI Init] DEBUG_MODE = {DEBUG_MODE}")
 
 # ────────────────────────── CORS 설정 ──────────────────────────
 origins = [
@@ -134,4 +135,4 @@ def index():
     return FileResponse("frontend/dist/index.html")
 
 
-logger.info("FastAPI app ready to serve")
+logger.info("================== FastAPI app ready to serve ==================\n")
